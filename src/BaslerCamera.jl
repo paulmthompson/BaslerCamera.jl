@@ -3,7 +3,7 @@ module BaslerCamera
 export init_camera, init_pylon, connect_camera, start_acquisition,
 stop_acquisition, get_camera_data, start_ffmpeg, end_ffmpeg, change_ffmpeg_folder, change_resolution
 
-using Libdl
+using Libdl, FFMPEG
 
 const mydl = "/home/wanglab/Programs/WhiskerTask/BaslerCpp.so"
 
