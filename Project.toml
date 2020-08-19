@@ -1,0 +1,9 @@
+name = "BaslerCamera"
+uuid = "e40af120-e25d-11ea-0ce6-f3b09ee65c37"
+version = "0.1"
+author = ["Paul Thompson"]
+
+[deps]
+
+[compat]
+julia = "1"
