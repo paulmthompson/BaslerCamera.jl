@@ -14,11 +14,6 @@ function get_pylon_version()
             end
         end
     println(PYLON_VERSION)
-
-    #run(`wget https://www.dropbox.com/s/1dr7g8x270xdrup/whisk-1.1.0d-64bit-Linux.tar.gz`)
-    #run(`tar -xzf whisk-1.1.0d-64bit-Linux.tar.gz`)
-    #rm("whisk-1.1.0d-64bit-Linux.tar.gz")
-    #run(`mv whisk-1.1.0d-Linux whisk`)
     elseif Sys.iswindows()
 
     elseif Sys.isosx()
@@ -33,7 +28,7 @@ PYLON_VERSION = get_pylon_version()
 
 if Sys.islinux()
     if PYLON_VERSION == 5
-        run(`wget https://www.dropbox.com/sh/dnq78bfrr9misq5/AAA48DbnuClV7mPVbE3dHJIja`)
+        run(`wget https://www.dropbox.com/s/1m0gfqxt7944kay/BaslerCamera.so`)
     end
 
 end
