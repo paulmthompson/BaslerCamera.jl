@@ -7,6 +7,26 @@ using Libdl, FFMPEG
 
 const mydl = "../deps/BaslerCamera.so"
 
+function __init__()
+
+    init_pylon()
+
+end
+
+mutable struct Camera
+    cam::Ptr{Nothing}
+    connected::Bool
+    acquiring::Bool
+    recording::Bool
+    w::Int64
+    h::Int64
+    bytes::Int64
+    ffmpeg_path::String
+    ffmpeg_input_opts::String
+    ffmpeg_output_opts::String
+    output_folder::String
+end
+
 function init_pylon()
     ccall((:initPylon,mydl),Nothing,())
     nothing
