@@ -5,7 +5,7 @@ stop_acquisition, get_camera_data, start_ffmpeg, end_ffmpeg, change_ffmpeg_folde
 
 using Libdl, FFMPEG
 
-const mydl = "/home/wanglab/Programs/WhiskerTask/BaslerCpp.so"
+const mydl = "../deps/BaslerCamera.so"
 
 function init_pylon()
     ccall((:initPylon,mydl),Nothing,())
@@ -71,4 +71,32 @@ function change_ffmpeg_folder(cam,folder)
     nothing
 end
 
+function change_camera_config(cam,path)
+    ccall((:MyCamera_ChangeCameraConfig,mydl),Nothing,(Ptr{Nothing},Ptr{UInt8}),cam,pointer(string(path)))
+
+    nothing
+end
+
+function change_ffmpeg_path(cam,path)
+    ccall((:MyCamera_ChangeFFMPEG,mydl),Nothing,(Ptr{Nothing},Ptr{UInt8}),cam,pointer(string(path)))
+
+    nothing
+end
+
+function change_ffmpeg_input_opts(cam,opts)
+    ccall((:MyCamera_ChangeFFMPEGInputOptions,mydl),Nothing,(Ptr{Nothing},Ptr{UInt8}),cam,pointer(string(opts)))
+
+    nothing
+end
+
+function change_ffmpeg_output_opts(cam,opts)
+    ccall((:MyCamera_ChangeFFMPEGOutputOptions,mydl),Nothing,(Ptr{Nothing},Ptr{UInt8}),cam,pointer(string(opts)))
+
+    nothing
+end
+
+function change_bytes(cam,_bytes)
+    ccall((:MyCamera_ChangeBytes,mydl),Nothing,(Ptr{Nothing},Int32),cam,_bytes)
+
+    nothing
 end
