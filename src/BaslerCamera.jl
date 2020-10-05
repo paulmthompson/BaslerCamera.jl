@@ -1,7 +1,8 @@
 module BaslerCamera
 
-export init_camera, init_pylon, connect_camera, start_acquisition,
-stop_acquisition, get_camera_data, start_ffmpeg, end_ffmpeg, change_ffmpeg_folder, change_resolution
+export Camera, get_data, connect, start_acquisition, stop_acquisition
+
+export start_ffmpeg, end_ffmpeg, change_ffmpeg_folder
 
 using Libdl, FFMPEG
 
@@ -25,6 +26,30 @@ mutable struct Camera
     ffmpeg_input_opts::String
     ffmpeg_output_opts::String
     output_folder::String
+    num_cam::Int64
+end
+
+function Camera(h,w,_bytes,num_cam=1)
+    cam = init_camera(num_cam)
+    Camera(cam,false,false,false,w,h,_bytes,FFMPEG.ffmpeg_path,"","",".",num_cam)
+end
+
+function get_data(cam::Camera)
+    get_camera_data(cam.cam,cam.w,cam.h,cam.num_cam)
+end
+
+function connect(cam::Camera)
+    connect_camera(cam.cam)
+    sleep(1.0)
+    change_resolution(cam.cam,cam.w,cam.h)
+end
+
+function start_acquisition(cam)
+    start_acquisition(cam.cam)
+end
+
+function stop_acquisition(cam)
+    stop_acquisition(cam.cam)
 end
 
 function init_pylon()
