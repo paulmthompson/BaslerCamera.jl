@@ -6,7 +6,7 @@ export start_ffmpeg, end_ffmpeg, change_ffmpeg_folder
 
 using Libdl, FFMPEG
 
-const mydl = "../deps/BaslerCamera.so"
+const mydl = string(dirname(Base.source_path()),"/../deps/BaslerCamera.so")
 
 function __init__()
 
