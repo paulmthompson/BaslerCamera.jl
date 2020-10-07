@@ -10,7 +10,8 @@ function get_pylon_version()
             try
                 PYLON_VERSION=parse(Int64,Char(read(`/opt/pylon/bin/pylon-config --version`)[1]))
             catch
-                println("Pylon 5 or 6 not found :()")
+                println("Pylon 5 or 6 not found :(. Setting version as 5 by default.")
+                PYLON_VERSION = 5
             end
         end
     println(PYLON_VERSION)
