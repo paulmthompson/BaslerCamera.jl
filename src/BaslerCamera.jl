@@ -9,9 +9,11 @@ using Libdl, FFMPEG
 const mydl = string(dirname(Base.source_path()),"/../deps/BaslerCamera.so")
 
 function __init__()
-
-    init_pylon()
-
+    try
+        init_pylon()
+    catch
+        println("Could not successfully load Pylon libraries. Are they installed?")
+    end
 end
 
 mutable struct Camera
