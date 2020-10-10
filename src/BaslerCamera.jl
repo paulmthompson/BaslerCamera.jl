@@ -46,11 +46,11 @@ function connect(cam::Camera)
     change_resolution(cam.cam,cam.w,cam.h)
 end
 
-function start_acquisition(cam)
+function start_acquisition(cam::Camera)
     start_acquisition(cam.cam)
 end
 
-function stop_acquisition(cam)
+function stop_acquisition(cam::Camera)
     stop_acquisition(cam.cam)
 end
 
@@ -63,22 +63,22 @@ function init_camera(num_cam=1)
     cam = ccall((:newMyCamera,mydl),Ptr{Nothing},(Int32,),num_cam)
 end
 
-function connect_camera(cam)
+function connect_camera(cam::Ptr{Nothing})
     ccall((:MyCamera_Connect,mydl),Nothing,(Ptr{Nothing},),cam)
     nothing
 end
 
-function start_acquisition(cam)
+function start_acquisition(cam::Ptr{Nothing})
     ccall((:MyCamera_StartAcquisition,mydl),Nothing,(Ptr{Nothing},),cam)
     nothing
 end
 
-function stop_acquisition(cam)
+function stop_acquisition(cam::Ptr{Nothing})
     ccall((:MyCamera_StopAcquisition,mydl),Nothing,(Ptr{Nothing},),cam)
     nothing
 end
 
-function get_camera_data(cam,w,h,n_cam=1)
+function get_camera_data(cam::Ptr{Nothing},w,h,n_cam=1)
     ccall((:MyCamera_GrabFrames,mydl),Nothing,(Ptr{Nothing},),cam)
 
     #If there is no TTL trigger, the data matrix
@@ -96,12 +96,12 @@ function get_camera_data(cam,w,h,n_cam=1)
     (c, grabbed)
 end
 
-function start_ffmpeg(cam)
+function start_ffmpeg(cam::Ptr{Nothing})
     ccall((:MyCamera_StartFFMPEG,mydl),Nothing,(Ptr{Nothing},),cam)
     nothing
 end
 
-function end_ffmpeg(cam)
+function end_ffmpeg(cam::Ptr{Nothing})
     ccall((:MyCamera_EndFFMPEG,mydl),Nothing,(Ptr{Nothing},),cam)
     nothing
 end
