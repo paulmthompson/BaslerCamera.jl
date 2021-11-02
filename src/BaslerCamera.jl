@@ -33,7 +33,7 @@ end
 
 function Camera(h,w,_bytes,num_cam=1)
     cam = init_camera(num_cam)
-    Camera(cam,false,false,false,w,h,_bytes,FFMPEG.ffmpeg_path,"","",".",num_cam)
+    Camera(cam,false,false,false,w,h,_bytes,FFMPEG.FFMPEG_jll.ffmpeg_path,"","",".",num_cam)
 end
 
 function get_data(cam::Camera)
@@ -65,6 +65,11 @@ end
 
 function connect_camera(cam::Ptr{Nothing})
     ccall((:MyCamera_Connect,mydl),Nothing,(Ptr{Nothing},),cam)
+    nothing
+end
+
+function connect_camera(cam::Ptr{Nothing},serial::String)
+    ccall((:MyCamera_ConnectBySerial,mydl),Nothing,(Ptr{Nothing},Ptr{UInt8}),cam,serial)
     nothing
 end
 
