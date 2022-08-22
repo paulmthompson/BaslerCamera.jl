@@ -29,7 +29,8 @@ PYLON_VERSION = get_pylon_version()
 
 if Sys.islinux()
     if PYLON_VERSION == 5
-        run(`wget https://www.dropbox.com/s/1m0gfqxt7944kay/BaslerCamera.so`)
+        run(`wget https://www.dropbox.com/s/pa031p8jnyqnns8/baslercamerajl.zip`)
+        run(`unzip baslercamerajl.zip`)
     end
 
 end
