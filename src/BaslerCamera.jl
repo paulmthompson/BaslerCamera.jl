@@ -1,156 +1,71 @@
 module BaslerCamera
 
-export Camera, get_data, connect, start_acquisition, stop_acquisition
+export Camera, get_data, init_camera, load_configuration, change_save_path, set_record
 
-export start_ffmpeg, end_ffmpeg, change_ffmpeg_folder
 
-using Libdl, FFMPEG
-
-const mydl = string(dirname(Base.source_path()),"/../deps/BaslerCamera.so")
+const mydl = string(dirname(Base.source_path()),"/../deps/libCameraManager.so")
 
 function __init__()
-    try
-        init_pylon()
-    catch
-        println("Could not successfully load Pylon libraries. Are they installed?")
-    end
 end
 
 mutable struct Camera
     cam::Ptr{Nothing}
-    connected::Bool
-    acquiring::Bool
     recording::Bool
     w::Int64
     h::Int64
-    bytes::Int64
-    ffmpeg_path::String
-    ffmpeg_input_opts::String
-    ffmpeg_output_opts::String
-    output_folder::String
-    num_cam::Int64
+    config_path::String
 end
 
-function Camera(h,w,_bytes,num_cam=1)
-    cam = init_camera(num_cam)
-    Camera(cam,false,false,false,w,h,_bytes,FFMPEG.FFMPEG_jll.ffmpeg_path,"","",".",num_cam)
+function Camera(h,w,config_file)
+    cam = init_camera()
+    Camera(cam,false,w,h,config_file)
 end
 
 function get_data(cam::Camera)
-    get_camera_data(cam.cam,cam.w,cam.h,cam.num_cam)
+    get_camera_data(cam.cam,cam.w,cam.h)
 end
 
-function connect(cam::Camera)
-    connect_camera(cam.cam)
-    sleep(1.0)
-    change_resolution(cam.cam,cam.w,cam.h)
+function init_camera()
+    cam = ccall((:newCameraManager,mydl),Ptr{Nothing},())
 end
 
-function start_acquisition(cam::Camera)
-    start_acquisition(cam.cam)
+function load_configuration(cam::Camera, path)
+    ccall((:CameraManager_LoadConfigurationFile,mydl),Nothing,(Ptr{Nothing},Ptr{UInt8}),cam.cam,pointer(string(path)))
 end
 
-function stop_acquisition(cam::Camera)
-    stop_acquisition(cam.cam)
-end
-
-function init_pylon()
-    ccall((:initPylon,mydl),Nothing,())
-    nothing
-end
-
-function init_camera(num_cam=1)
-    cam = ccall((:newMyCamera,mydl),Ptr{Nothing},(Int32,),num_cam)
-end
-
-function connect_camera(cam::Ptr{Nothing})
-    ccall((:MyCamera_Connect,mydl),Nothing,(Ptr{Nothing},),cam)
-    nothing
-end
-
-function connect_camera(cam::Ptr{Nothing},serial::String)
-    ccall((:MyCamera_ConnectBySerial,mydl),Nothing,(Ptr{Nothing},Ptr{UInt8}),cam,serial)
-    nothing
-end
-
-function start_acquisition(cam::Ptr{Nothing})
-    ccall((:MyCamera_StartAcquisition,mydl),Nothing,(Ptr{Nothing},),cam)
-    nothing
-end
-
-function stop_acquisition(cam::Ptr{Nothing})
-    ccall((:MyCamera_StopAcquisition,mydl),Nothing,(Ptr{Nothing},),cam)
-    nothing
-end
-
-function get_camera_data(cam::Ptr{Nothing},w,h,n_cam=1)
-    ccall((:MyCamera_GrabFrames,mydl),Nothing,(Ptr{Nothing},),cam)
+function get_camera_data(cam::Ptr{Nothing},w,h)
+    grabbed = ccall((:CameraManager_AcquisitionLoop,mydl),Int32,(Ptr{Nothing},),cam)
 
     #If there is no TTL trigger, the data matrix
     #Associated with the camera may not be initialized
     #and we will just return a blank matrix
-    grabbed = ccall((:MyCamera_GetFramesGrabbed,mydl),Bool,(Ptr{Nothing},),cam)
-    if (grabbed)
-        a = ccall((:MyCamera_GetData,mydl),Ptr{UInt8},(Ptr{Nothing},),cam)
-        b=unsafe_wrap(Array,a,w*h*n_cam)
-        c=reshape(b,(convert(Int64,h),convert(Int64,w*n_cam)))
-    else
-        c = zeros(UInt8,w,h*n_cam)
+
+    c = zeros(UInt8,w,h)
+    if (grabbed > 0)
+        ccall((:CameraManager_GetImage,mydl),Nothing,(Ptr{Nothing},Ptr{UInt8},Int32),cam,pointer(c),0)
     end
 
     (c, grabbed)
 end
 
-function start_ffmpeg(cam::Ptr{Nothing})
-    ccall((:MyCamera_StartFFMPEG,mydl),Nothing,(Ptr{Nothing},),cam)
-    nothing
-end
-
-function end_ffmpeg(cam::Ptr{Nothing})
-    ccall((:MyCamera_EndFFMPEG,mydl),Nothing,(Ptr{Nothing},),cam)
-    nothing
-end
-
-function change_resolution(cam,w,h)
-    ccall((:MyCamera_changeResolution,mydl),Nothing,(Ptr{Nothing},Int32,Int32),cam,w,h)
-    nothing
-end
-
-function change_ffmpeg_folder(cam,folder)
-
-    ccall((:MyCamera_ChangeFolder,mydl),Nothing,(Ptr{Nothing},Ptr{UInt8}),cam,pointer(string(folder,"/")))
+function change_save_path(cam,path)
+    ccall((:CameraManager_ChangeFileNames,mydl),Nothing,(Ptr{Nothing},Ptr{UInt8}),cam,pointer(string(path)))
 
     nothing
 end
 
-function change_camera_config(cam,path)
-    ccall((:MyCamera_ChangeCameraConfig,mydl),Nothing,(Ptr{Nothing},Ptr{UInt8}),cam,pointer(string(path)))
-
-    nothing
+function get_camera_ids(cam)
+    output_ids = zeros(Int32,20)
+    num_cam = ccall((:CameraManager_GetActiveCameras,mydl),Int32,(Ptr{Nothing},Ptr{Int32}),cam,pointer(output_ids))
+    println("A total of ", num_cam, " are connected with IDs of ")
+    for i=1:num_cam
+        println(output_ids[i])
+    end
+    output_ids[1:num_cam]
 end
 
-function change_ffmpeg_path(cam,path)
-    ccall((:MyCamera_ChangeFFMPEG,mydl),Nothing,(Ptr{Nothing},Ptr{UInt8}),cam,pointer(string(path)))
-
-    nothing
-end
-
-function change_ffmpeg_input_opts(cam,opts)
-    ccall((:MyCamera_ChangeFFMPEGInputOptions,mydl),Nothing,(Ptr{Nothing},Ptr{UInt8}),cam,pointer(string(opts)))
-
-    nothing
-end
-
-function change_ffmpeg_output_opts(cam,opts)
-    ccall((:MyCamera_ChangeFFMPEGOutputOptions,mydl),Nothing,(Ptr{Nothing},Ptr{UInt8}),cam,pointer(string(opts)))
-
-    nothing
-end
-
-function change_bytes(cam,_bytes)
-    ccall((:MyCamera_ChangeBytes,mydl),Nothing,(Ptr{Nothing},Int32),cam,_bytes)
-
-    nothing
+function set_record(cam,state)
+    ccall((:CameraManager_SetRecord,mydl),Nothing,(Ptr{Nothing},Bool),cam,state)
 end
 
 end
